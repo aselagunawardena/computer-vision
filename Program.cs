@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 using System.Drawing;
 using Microsoft.Extensions.Configuration;
 using Azure;
+// Ensure the correct namespace is imported
+using testClassifier; // Verify this namespace exists and contains the TrainClassifier class
 
 // Import namespaces
 using Azure.AI.Vision.ImageAnalysis;
+//using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
 
 namespace image_analysis
 {
@@ -39,14 +42,17 @@ namespace image_analysis
                     new Uri(aiSvcEndpoint),
                     new AzureKeyCredential(aiSvcKey));
 
-                
+                // Ensure the TrainClassifier class and Train method exist
+                await TestClassifier.Predict(configuration);
+
+
                 // Analyze image
-                AnalyzeImage(imageFile, client);
+                //AnalyzeImage(imageFile, client);
 
                 // Remove the background or generate a foreground matte from the image
                 // IMPORTANT: This feature has been retired and removed from lab. Code snippet
                 //     will be removed soon.
-                await BackgroundForeground(imageFile, aiSvcEndpoint, aiSvcKey);
+                //await BackgroundForeground(imageFile, aiSvcEndpoint, aiSvcKey);
 
             }
             catch (Exception ex)
