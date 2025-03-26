@@ -42,6 +42,9 @@ namespace image_analysis
                     new Uri(aiSvcEndpoint),
                     new AzureKeyCredential(aiSvcKey));
 
+
+                await trainClassifier.TrainClassifier.Train(configuration);
+
                 // Ensure the TrainClassifier class and Train method exist
                 await TestClassifier.Predict(configuration);
 
