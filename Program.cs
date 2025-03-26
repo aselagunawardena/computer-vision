@@ -24,8 +24,8 @@ namespace image_analysis
                 // Get config settings from AppSettings
                 IConfigurationBuilder builder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
                 IConfigurationRoot configuration = builder.Build();
-                string aiSvcEndpoint = configuration["AIServicesEndpoint"];
-                string aiSvcKey = configuration["AIServicesKey"];
+                string aiSvcEndpoint = configuration["AIServicesEndpoint"]?? throw new ArgumentNullException("AIServicesEndpoint", "The AI Services Endpoint is not configured.");
+               string aiSvcKey = configuration["AIServicesKey"] ?? throw new ArgumentNullException("AIServicesKey", "The AI Services Key is not configured.");
 
                 // Get image
                 string imageFile = "images/twisters.jpg";
@@ -71,69 +71,112 @@ namespace image_analysis
                 VisualFeatures.Objects |
                 VisualFeatures.Tags |
                 VisualFeatures.People);
-            
+                        
+            stream.Close();
+
+            // Display analysis results
+            DisplayAnalysisResults(result).Wait();
+
+            // Get objects in the image
+            GetObjectsInImage(imageFile, result).Wait();
+
+            // Get people in the image
+            GetPeopleInImage(imageFile, result).Wait();
+
+        }
+
+
+        static async Task DisplayAnalysisResults(ImageAnalysisResult result)
+        {
             // Display analysis results
             // Get image captions
-            if (result.Caption.Text != null)
-            {
-                Console.WriteLine(" Caption:");
-                Console.WriteLine($"   \"{result.Caption.Text}\", Confidence {result.Caption.Confidence:0.00}\n");
-            }
 
-            // Get image dense captions
-            Console.WriteLine(" Dense Captions:");
-            foreach (DenseCaption denseCaption in result.DenseCaptions.Values)
+            await Task.Run(() =>
             {
-                Console.WriteLine($"   Caption: '{denseCaption.Text}', Confidence: {denseCaption.Confidence:0.00}");
-            }
-
-            // Get image tags
-            if (result.Tags.Values.Count > 0)
-            {
-                Console.WriteLine($"\n Tags:");
-                foreach (DetectedTag tag in result.Tags.Values)
+                if (result.Caption.Text != null)
                 {
-                    Console.WriteLine($"   '{tag.Name}', Confidence: {tag.Confidence:F2}");
+                    Console.WriteLine(" Caption:");
+                    Console.WriteLine($"   \"{result.Caption.Text}\", Confidence {result.Caption.Confidence:0.00}\n");
                 }
-            }
 
+                // Get image dense captions
+                Console.WriteLine(" Dense Captions:");
+                foreach (DenseCaption denseCaption in result.DenseCaptions.Values)
+                {
+                    Console.WriteLine($"   Caption: '{denseCaption.Text}', Confidence: {denseCaption.Confidence:0.00}");
+                }
+
+                // Get image tags
+                if (result.Tags.Values.Count > 0)
+                {
+                    Console.WriteLine($"\n Tags:");
+                    foreach (DetectedTag tag in result.Tags.Values)
+                    {
+                        Console.WriteLine($"   '{tag.Name}', Confidence: {tag.Confidence:F2}");
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="imageFile"></param>
+        /// <param name="stream"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        static async Task GetObjectsInImage(string imageFile, ImageAnalysisResult result)
+        {
             // Get objects in the image
             if (result.Objects.Values.Count > 0)
             {
                 Console.WriteLine(" Objects:");
 
                 // Prepare image for drawing
-                stream.Close();
-                Image image = Image.FromFile(imageFile);
-                Graphics graphics = Graphics.FromImage(image);
-                Pen pen = new Pen(Color.Cyan, 3);
-                Font font = new Font("Arial", 16);
-                SolidBrush brush = new SolidBrush(Color.WhiteSmoke);
-
-                foreach (DetectedObject detectedObject in result.Objects.Values)
+                 await Task.Run(() =>
                 {
-                    Console.WriteLine($"   \"{detectedObject.Tags[0].Name}\"");
+                    Image image = Image.FromFile(imageFile);
+                    Graphics graphics = Graphics.FromImage(image);
+                    Pen pen = new Pen(Color.Cyan, 3);
+                    Font font = new Font("Arial", 16);
+                    SolidBrush brush = new SolidBrush(Color.WhiteSmoke);
 
-                    // Draw object bounding box
-                    var r = detectedObject.BoundingBox;
-                    Rectangle rect = new Rectangle(r.X, r.Y, r.Width, r.Height);
-                    graphics.DrawRectangle(pen, rect);
-                    graphics.DrawString(detectedObject.Tags[0].Name,font,brush,(float)r.X, (float)r.Y);
-                }
+                    foreach (DetectedObject detectedObject in result.Objects.Values)
+                    {
+                        Console.WriteLine($"   \"{detectedObject.Tags[0].Name}\"");
 
-                // Save annotated image
-                String output_file = "objects.jpg";
-                image.Save(output_file);
-                Console.WriteLine("  Results saved in " + output_file + "\n");
+                        // Draw object bounding box
+                        var r = detectedObject.BoundingBox;
+                        Rectangle rect = new Rectangle(r.X, r.Y, r.Width, r.Height);
+                        graphics.DrawRectangle(pen, rect);
+                        graphics.DrawString(detectedObject.Tags[0].Name,font,brush,(float)r.X, (float)r.Y);
+                    }
+
+                    // Save annotated image
+                    String output_file = "objects.jpg";
+                    image.Save(output_file);
+                    Console.WriteLine("  Results saved in " + output_file + "\n");
+                });
             }
+        }
 
 
-            // Get people in the image
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="imageFile"></param>
+        /// <param name="stream"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        static async Task GetPeopleInImage(string imageFile, ImageAnalysisResult result)
+        {
             if (result.People.Values.Count > 0)
             {
                 Console.WriteLine($" People:");
 
                 // Prepare image for drawing
+                await Task.Run(() =>
+                {
                 System.Drawing.Image image = System.Drawing.Image.FromFile(imageFile);
                 Graphics graphics = Graphics.FromImage(image);
                 Pen pen = new Pen(Color.Cyan, 3);
@@ -155,10 +198,11 @@ namespace image_analysis
                 String output_file = "persons.jpg";
                 image.Save(output_file);
                 Console.WriteLine("  Results saved in " + output_file + "\n");
+                });
             }
-            
 
         }
+
         static async Task BackgroundForeground(string imageFile, string endpoint, string key)
         {
             // Remove the background from the image or generate a foreground matte
@@ -168,8 +212,7 @@ namespace image_analysis
             
             // Simulate a delay to mimic an async operation
             await Task.Delay(1000);
-
-      
+     
         }
     }
 }
