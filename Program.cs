@@ -85,7 +85,11 @@ namespace image_analysis
 
         }
 
-
+        /// <summary>
+        /// Display analysis results
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
         static async Task DisplayAnalysisResults(ImageAnalysisResult result)
         {
             // Display analysis results
@@ -119,7 +123,7 @@ namespace image_analysis
         }
 
         /// <summary>
-        /// 
+        /// Get objects in the image
         /// </summary>
         /// <param name="imageFile"></param>
         /// <param name="stream"></param>
@@ -162,7 +166,7 @@ namespace image_analysis
 
 
         /// <summary>
-        /// 
+        /// Get people in the image
         /// </summary>
         /// <param name="imageFile"></param>
         /// <param name="stream"></param>
