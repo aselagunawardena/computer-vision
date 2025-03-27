@@ -100,10 +100,27 @@ namespace textreader
                     var drawLinePolygon = true;
                         
                     // Return the position bounding box around each line
-                        
+                    Console.WriteLine($"   Bounding Polygon: [{string.Join(" ", line.BoundingPolygon)}]");     
                         
                         
                     // Return each word detected in the image and the position bounding box around each word with the confidence level of each word
+                    foreach (DetectedTextWord word in line.Words)
+                    {
+                        Console.WriteLine($"     Word: '{word.Text}', Confidence {word.Confidence:F4}, Bounding Polygon: [{string.Join(" ", word.BoundingPolygon)}]");
+                            
+                        // Draw word bounding polygon
+                        drawLinePolygon = false;
+                        var r = word.BoundingPolygon;
+                        
+                        Point[] polygonPoints = {
+                            new Point(r[0].X, r[0].Y),
+                            new Point(r[1].X, r[1].Y),
+                            new Point(r[2].X, r[2].Y),
+                            new Point(r[3].X, r[3].Y)
+                        };
+                        
+                        graphics.DrawPolygon(pen, polygonPoints);
+                    }
                         
                         
                         
