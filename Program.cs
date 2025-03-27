@@ -15,6 +15,8 @@ using testClassifier; // Verify this namespace exists and contains the TrainClas
 using Azure.AI.Vision.ImageAnalysis;
 //using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Training.Models;
 
+using textreader;
+
 namespace image_analysis
 {
     class Program
@@ -31,7 +33,7 @@ namespace image_analysis
                string aiSvcKey = configuration["AIServicesKey"] ?? throw new ArgumentNullException("AIServicesKey", "The AI Services Key is not configured.");
 
                 // Get image
-                string imageFile = "images/twisters.jpg";
+                string imageFile = "images/people.jpg";
                 if (args.Length > 0)
                 {
                     imageFile = args[0];
@@ -43,14 +45,17 @@ namespace image_analysis
                     new AzureKeyCredential(aiSvcKey));
 
 
-                await trainClassifier.TrainClassifier.Train(configuration);
+                //await trainClassifier.TrainClassifier.Train(configuration);
 
                 // Ensure the TrainClassifier class and Train method exist
-                await TestClassifier.Predict(configuration);
+                //await TestClassifier.Predict(configuration);
 
 
                 // Analyze image
                 //AnalyzeImage(imageFile, client);
+
+                //TextReading
+                await OCRTextReader.Read(configuration);
 
             }
             catch (Exception ex)
